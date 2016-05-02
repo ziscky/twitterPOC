@@ -1,7 +1,6 @@
-package main
+package twitter
 
 import (
-	"github.com/mrjones/oauth"
 	"io/ioutil"
 	"log"
 )
@@ -12,6 +11,7 @@ type Twitter struct {
 	ConsumerSecret string
 	AccessToken    string
 	AccessSecret   string
+	Username       string
 	Debug          bool //to set OAUTH log level, if you want to see the response headers
 }
 
@@ -19,15 +19,16 @@ type Twitter struct {
 func (twitter *Twitter) Tweet(status string) (string, error) {
 	var endpoint = "https://api.twitter.com/1.1/statuses/update.json"
 
-	consumer := oauth.NewConsumer(twitter.ConsumerKey, twitter.ConsumerSecret, oauth.ServiceProvider{})
-	consumer.Debug(true)
-	accessToken := &oauth.AccessToken{Token: twitter.AccessToken, Secret: twitter.AccessSecret}
+	client := new(Client)
+	client.ConsumerKey = twitter.ConsumerKey
+	client.ConsumerSecret = twitter.ConsumerSecret
+	accessToken := &Token{AccessToken: twitter.AccessToken, AccessSecret: twitter.AccessSecret}
 
 	params := map[string]string{
 		"status": status,
 	}
 
-	response, err1 := consumer.Post(endpoint, params, accessToken)
+	response, err1 := client.Request(endpoint, "POST", "", params, accessToken)
 	if err1 != nil {
 		log.Println("LOG_FATAL", err1)
 		return "", err1
